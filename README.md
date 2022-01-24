@@ -2,6 +2,8 @@
 
 Server Sent Events backend written in go. Redis is used to distribute published messages across all backends so that the backend can be scaled horizontally.
 
+The backend is stateless in that it doesn't matter to which instance the message is published, since it will be distributed to all other instances and them sent to the connected clients of the respective instance using event-stream.
+
 ## Docker Compose
 
 Start the compose stack, then visit the webpage at http://localhost:8080. It is a basic chat page. Open it multiple times to see real time events published from one client on all other client pages.
