@@ -33,5 +33,4 @@ services:
       - 8080:8080
     volumes:
       - ./frontend:/usr/share/nginx/html:ro,delegated
-    logging:
-      driver: "none"
+    logging: { driver: "none" }
