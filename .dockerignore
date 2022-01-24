@@ -1,0 +1,9 @@
+frontend
+.git
+.dockerignore
+.editorconfig
+.gitignore
+compose.ya?ml
+Dockerfile
+lb.cfg
+README.md

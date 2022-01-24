@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  # redis is used for pub/sub to be able to scale the backend
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    logging: { driver: "none" }
+
+  # the backend as 2 replicas for demonstration purposes
+  backend:
+    build: ./
+    deploy:
+      replicas: 2
+      endpoint_mode: dnsrr
+    depends_on:
+      - redis
+
+  # the loadbalancer to route traffic to the backend replicas
+  lb:
+    image: haproxy
+    ports:
+      - 3000:8080
+    volumes:
+      - ./lb.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro,cached
+    logging: { driver: "none" }
+
+  # the webpage to pub/sub to the backend via the loadbalancer
+  page:
+    image: nginxinc/nginx-unprivileged
+    ports:
+      - 8080:8080
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro,delegated
+    logging:
+      driver: "none"

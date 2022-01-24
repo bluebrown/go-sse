@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live View</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --page-background-color: rgba(27, 29, 34, 0.822);
+      --component-background-color: rgba(41, 47, 63, 0.87);
+      --text-color: #fff;
+    }
+
+    html {
+      background-color: var(--page-background-color);
+    }
+
+    .container {
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 50%;
+    }
+
+    #message-container-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column-reverse;
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow: auto;
+      padding: 1.25rem;
+      background-color: var(--component-background-color);
+      color: var(--text-color);
+    }
+
+    .message {
+      margin-bottom: 0.5rem;
+    }
+
+    #pusher {
+      flex: 1 1 0%;
+    }
+
+    #new-message {
+      width: 100%;
+      display: flex;
+    }
+
+    #new-message-username {
+      width: 6.5rem;
+    }
+
+    #new-message-content {
+      flex: 1 1 0%;
+    }
+
+    input {
+      border: 1px solid #ccc;
+      border-radius: 0.25rem;
+      background-color: var(--component-background-color);
+      color: var(--text-color);
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container">
+    <h1>Live View</h1>
+    <div id="message-container-wrapper">
+      <span id="pusher"></span>
+      <div id="message-container"></div>
+    </div>
+    <div id="new-message">
+      <input type="text" id="new-message-username" name="new-message-username" title="Username" aria-label="Username"
+        placeholder="Your Username">
+      <input type=text id="new-message-content" name="new-message-content" title="New Message" aria-label="New Message"
+        placeholder="Write a new message"></input>
+      <button id="new-message-submit">Post</button>
+    </div>
+  </div>
+
+
+  <script>
+    const messageContainer = document.getElementById("message-container");
+    const newMessageUsername = document.getElementById("new-message-username");
+    const newMessageContent = document.getElementById("new-message-content");
+
+    (function events() {
+      const evtSource = new EventSource("http://localhost:3000/subscribe");
+
+      evtSource.addEventListener("error", function handleError() {
+        console.log("Error");
+      }, false);
+
+      evtSource.addEventListener("sse", function handleSseEvents(e) {
+        const { message, user } = JSON.parse(e.data);
+        messageContainer.appendChild(Object.assign(document.createElement("div"), {
+          textContent: `${user}: ${message}`,
+          className: "message",
+        }));
+      }, false);
+
+    })();
+
+    function publish() {
+      console.log("publishing:", newMessageContent.value);
+      if (newMessageContent.value === "") {
+        return;
+      }
+      fetch("http://localhost:3000/publish", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user: newMessageUsername.value || "Anonymous",
+          message: newMessageContent.value
+        })
+      })
+        .then()
+        .catch(console.warn)
+    }
+
+    document.getElementById("new-message-submit").addEventListener("click", publish);
+
+  </script>
+
+</body>
+
+</html>
